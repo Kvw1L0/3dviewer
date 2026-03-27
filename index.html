@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador 3D Interactivo</title>
+    
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+    <style>
+        /* Reseteo básico y tipografía */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a1a; /* Fondo oscuro para resaltar el modelo */
+            overflow: hidden; /* Evita el scroll accidental */
+        }
+
+        /* Contenedor principal a pantalla completa */
+        #contenedor-3d {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Estilos del visor 3D */
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: transparent; /* Ocultar color de fondo por defecto al cargar */
+        }
+
+        /* Interfaz de Usuario superpuesta (UI) */
+        .ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 10;
+            pointer-events: none; /* Para que no bloquee el toque al modelo */
+        }
+
+        .ui-overlay h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .ui-overlay p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* Personalización del botón de AR por defecto */
+        model-viewer::part(default-ar-button) {
+            background-color: #ff3366;
+            color: white;
+            border-radius: 25px;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            bottom: 30px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="contenedor-3d">
+        <div class="ui-overlay">
+            <h1>Explora el Modelo</h1>
+            <p>Usa tus dedos o el mouse para girar y acercar.</p>
+        </div>
+
+        <model-viewer 
+            src="ruta/a/tu/modelo.glb" 
+            alt="Modelo 3D Interactivo de la activación"
+            camera-controls 
+            auto-rotate
+            auto-rotate-delay="3000"
+            rotation-per-second="30deg"
+            shadow-intensity="1"
+            shadow-softness="0.5"
+            exposure="1"
+            environment-image="neutral"
+            ar>
+            
+            <div slot="poster" style="color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                Cargando experiencia...
+            </div>
+        </model-viewer>
+    </div>
+
+</body>
+</html>
