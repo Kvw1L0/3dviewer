@@ -1,132 +1,148 @@
-<!-- 1. El elemento de Audio (Oculto) -->
-<audio id="ar-audio" src="tu-audio-inmersivo.mp3" preload="auto"></audio>
-
-<!-- 2. El Visor 3D con el Hotspot Integrado -->
-<model-viewer id="visor-espacial" src="space1.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save the Date - Misión Espacial</title>
     
-    <!-- Botón nativo de AR -->
-    <button slot="ar-button" class="ar-button">VER EN TU ESPACIO</button>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
-    <!-- HOTSPOT HTML: Consola Holográfica (Oculta por defecto, se muestra en AR) -->
-    <div slot="hotspot-rsvp" data-position="0 0.5 0" data-normal="0 1 0" class="hologram-panel" id="rsvp-panel">
-        <div class="panel-content">
-            <h3 style="margin: 0 0 10px 0; color: #00FFFF; font-weight: 300; letter-spacing: 2px;">MISIÓN: SAVE THE DATE</h3>
-            <p style="font-size: 0.8rem; margin-bottom: 15px; opacity: 0.8;">Confirma tu asistencia en la bitácora.</p>
+    <style>
+        body { margin: 0; padding: 0; background-color: #050505; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; color: white; }
+        
+        #intro-screen {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('./espacioHDRI.png'); 
+            background-size: cover; background-position: center;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 20; transition: opacity 1s ease-out;
+        }
+
+        .hologram-panel {
+            background: rgba(10, 10, 15, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.2); border-top: 4px solid #00FFFF;
+            padding: 30px; border-radius: 12px; width: 85%; max-width: 320px;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 20px rgba(0, 255, 255, 0.15);
+        }
+
+        .hologram-panel h3 { margin: 0 0 10px 0; color: #00FFFF; font-weight: 400; letter-spacing: 3px; }
+        .hologram-panel p { font-size: 0.85rem; margin-bottom: 25px; opacity: 0.8; }
+
+        .minimal-input {
+            width: 100%; box-sizing: border-box; background: transparent; border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 10px 0;
+            margin-bottom: 25px; font-size: 1rem; outline: none; transition: border-color 0.3s ease; text-align: center;
+        }
+        .minimal-input:focus { border-bottom: 1px solid #00FFFF; }
+
+        .neon-btn {
+            width: 100%; background: rgba(0, 255, 255, 0.1); color: #00FFFF; border: 1px solid #00FFFF;
+            padding: 12px; border-radius: 6px; font-size: 0.9rem; letter-spacing: 2px;
+            cursor: pointer; transition: all 0.3s ease; font-weight: bold;
+        }
+        .neon-btn:hover { background: rgba(0, 255, 255, 0.2); }
+        .neon-btn:active { background: #00FFFF; color: #000; }
+
+        model-viewer { 
+            width: 100vw; height: 100vh; --poster-color: transparent; display: none; 
+        }
+        
+        .ar-button { 
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.95); color: #000; border: none; 
+            border-radius: 50px; padding: 16px 32px; font-weight: 600; cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ELEMENTO DE AUDIO OCULTO -->
+    <!-- Asegúrate de que el archivo se llame exactamente 'bienvenida.mp3' o cambia el nombre aquí -->
+    <audio id="audio-fondo" src="./bienvenida.mp3" preload="auto"></audio>
+
+    <!-- PANTALLA 1: FORMULARIO -->
+    <div id="intro-screen">
+        <div class="hologram-panel">
+            <h3>MISIÓN: SAVE THE DATE</h3>
+            <p>Registra tu identidad en la bitácora para acceder a las coordenadas.</p>
             
-            <!-- Formulario Minimalista (Sin pedir teléfono) -->
-            <input type="text" id="guest-name" placeholder="Ingresa tu nombre y apellido" class="minimal-input">
-            <button id="btn-confirmar" class="neon-btn">CONFIRMAR ASISTENCIA</button>
-            
-            <p id="success-msg" style="display:none; color: #00FFFF; margin-top: 15px; font-size: 0.9rem;">¡Datos sincronizados. Nos vemos a bordo!</p>
+            <input type="text" id="guest-name" placeholder="Tu Nombre y Apellido" class="minimal-input">
+            <button id="btn-confirmar" class="neon-btn">INICIAR SECUENCIA</button>
+            <p id="loading-msg" style="display:none; color: #00FFFF; margin-top: 15px; font-size: 0.8rem;">Sincronizando...</p>
         </div>
     </div>
-</model-viewer>
 
-<!-- 3. Estilos de la UI Minimalista -->
-<style>
-    /* Estilo del panel holográfico */
-    .hologram-panel {
-        background: rgba(10, 10, 15, 0.8);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(0, 255, 255, 0.3);
-        border-top: 3px solid #00FFFF;
-        padding: 20px;
-        border-radius: 8px;
-        width: 280px;
-        color: #ffffff;
-        font-family: 'Helvetica Neue', sans-serif;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(0, 255, 255, 0.1);
-        /* Oculto inicialmente, se puede hacer visible vía JS cuando entra a AR */
-        display: block; 
-    }
-
-    .minimal-input {
-        width: 100%;
-        box-sizing: border-box;
-        background: transparent;
-        border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        padding: 8px 0;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-        outline: none;
-        transition: border-color 0.3s ease;
-    }
-
-    .minimal-input:focus {
-        border-bottom: 1px solid #00FFFF;
-    }
-
-    .neon-btn {
-        width: 100%;
-        background: transparent;
-        color: #00FFFF;
-        border: 1px solid #00FFFF;
-        padding: 10px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .neon-btn:active {
-        background: #00FFFF;
-        color: #000;
-    }
-</style>
-
-<!-- 4. Lógica de Sincronización y Audio -->
-<script type="module">
-    // 1. Inicializar Firebase (Asegúrate de incluir los scripts de Firebase SDK en tu <head>)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    const firebaseConfig = {
-        // Reemplaza esto con los datos de tu proyecto
-        databaseURL: "https://tu-proyecto-default-rtdb.firebaseio.com" 
-    };
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-
-    const modelViewer = document.querySelector('#visor-espacial');
-    const audio = document.querySelector('#ar-audio');
-    const btnConfirmar = document.querySelector('#btn-confirmar');
-    const inputName = document.querySelector('#guest-name');
-    const successMsg = document.querySelector('#success-msg');
-
-    // 2. Disparador de Audio al entrar en AR
-    modelViewer.addEventListener('ar-status', (event) => {
-        if (event.detail.status === 'session-started') {
-            // El usuario ha entrado en la vista de cámara
-            audio.play().catch(e => console.log("Interacción requerida para audio:", e));
-        }
-    });
-
-    // 3. Lógica del botón RSVP
-    btnConfirmar.addEventListener('click', () => {
-        const nombre = inputName.value.trim();
+    <!-- PANTALLA 2: VISOR 3D Y AR -->
+    <model-viewer id="visor-espacial" 
+        src="./tu_modelo.glb" 
+        skybox-image="./espacioHDRI.png" 
+        environment-image="./espacioHDRI.png"
+        exposure="1.5" 
+        shadow-intensity="1.2"
+        tone-mapping="aces"
+        ar 
+        ar-modes="webxr scene-viewer quick-look" 
+        ar-placement="floor" 
+        camera-controls
+        auto-rotate>
         
-        if(nombre !== "") {
-            // Sincronizar con Realtime Database
-            const rsvpRef = ref(database, 'asistentes');
-            const nuevoAsistenteRef = push(rsvpRef);
-            
-            set(nuevoAsistenteRef, {
-                nombre: nombre,
-                fechaConfirmacion: new Date().toISOString()
-            }).then(() => {
-                // UI: Ocultar input y botón, mostrar éxito
-                inputName.style.display = 'none';
-                btnConfirmar.style.display = 'none';
-                successMsg.style.display = 'block';
-            }).catch((error) => {
-                console.error("Error al sincronizar datos:", error);
-            });
-        } else {
-            alert("Por favor, ingresa tu nombre.");
+        <button slot="ar-button" class="ar-button">FIJAR NAVE EN TU ESPACIO</button>
+    </model-viewer>
+
+    <!-- Lógica JavaScript -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            databaseURL: "https://buzzer-67109-default-rtdb.firebaseio.com" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const btnConfirmar = document.querySelector('#btn-confirmar');
+        const inputName = document.querySelector('#guest-name');
+        const introScreen = document.querySelector('#intro-screen');
+        const visorEspacial = document.querySelector('#visor-espacial');
+        const loadingMsg = document.querySelector('#loading-msg');
+        
+        // Elemento de audio
+        const audioFondo = document.querySelector('#audio-fondo');
+
+        function iniciarExperiencia3D() {
+            // Reproducir el audio justo al hacer la transición
+            audioFondo.play().catch(e => console.log("Error al reproducir audio:", e));
+
+            introScreen.style.opacity = '0'; 
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                visorEspacial.style.display = 'block'; 
+            }, 1000);
         }
-    });
-</script>
+
+        btnConfirmar.addEventListener('click', () => {
+            const nombre = inputName.value.trim();
+            if(nombre !== "") {
+                btnConfirmar.style.display = 'none';
+                loadingMsg.style.display = 'block';
+
+                const rsvpRef = ref(database, 'asistentes-boda');
+                const nuevoAsistenteRef = push(rsvpRef);
+                
+                set(nuevoAsistenteRef, {
+                    nombre: nombre,
+                    timestamp: new Date().toISOString()
+                }).then(() => {
+                    iniciarExperiencia3D();
+                }).catch((error) => {
+                    console.error("Fallo Firebase, pero avanzamos igual:", error);
+                    iniciarExperiencia3D();
+                });
+            } else {
+                alert("Por favor, ingresa tu nombre para continuar.");
+            }
+        });
+    </script>
+</body>
+</html>
