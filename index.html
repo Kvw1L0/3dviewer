@@ -1,40 +1,132 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save the Date 3D - Espacial</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-    <style>
-        body { margin: 0; padding: 0; background-color: #050505; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; }
-        model-viewer { width: 100vw; height: 100vh; --poster-color: transparent; }
-        .ui-container { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); text-align: center; color: #fff; pointer-events: none; z-index: 10; }
-        .ar-button { background-color: rgba(255, 255, 255, 0.95); color: #000; border: none; border-radius: 50px; padding: 14px 28px; font-weight: 600; cursor: pointer; pointer-events: auto; }
-    </style>
-</head>
-<body>
+<!-- 1. El elemento de Audio (Oculto) -->
+<audio id="ar-audio" src="tu-audio-inmersivo.mp3" preload="auto"></audio>
 
-    <!-- Se han añadido atributos de iluminación y sombras -->
-    <model-viewer 
-        src="space1.glb" 
-        skybox-image="espacioHDRI.png" 
-        environment-image="espacioHDRI.png"
-        exposure="1.5" 
-        shadow-intensity="1.2"
-        shadow-softness="0.8"
-        tone-mapping="aces"
-        ar 
-        ar-modes="webxr scene-viewer quick-look" 
-        ar-placement="floor" 
-        camera-controls
-        auto-rotate>
-        
-        <button slot="ar-button" class="ar-button">VER EN TU ESPACIO</button>
-    </model-viewer>
+<!-- 2. El Visor 3D con el Hotspot Integrado -->
+<model-viewer id="visor-espacial" src="space1.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls>
+    
+    <!-- Botón nativo de AR -->
+    <button slot="ar-button" class="ar-button">VER EN TU ESPACIO</button>
 
-    <div class="ui-container">
-        <p>Apunta al suelo para fijar la nave</p>
+    <!-- HOTSPOT HTML: Consola Holográfica (Oculta por defecto, se muestra en AR) -->
+    <div slot="hotspot-rsvp" data-position="0 0.5 0" data-normal="0 1 0" class="hologram-panel" id="rsvp-panel">
+        <div class="panel-content">
+            <h3 style="margin: 0 0 10px 0; color: #00FFFF; font-weight: 300; letter-spacing: 2px;">MISIÓN: SAVE THE DATE</h3>
+            <p style="font-size: 0.8rem; margin-bottom: 15px; opacity: 0.8;">Confirma tu asistencia en la bitácora.</p>
+            
+            <!-- Formulario Minimalista (Sin pedir teléfono) -->
+            <input type="text" id="guest-name" placeholder="Ingresa tu nombre y apellido" class="minimal-input">
+            <button id="btn-confirmar" class="neon-btn">CONFIRMAR ASISTENCIA</button>
+            
+            <p id="success-msg" style="display:none; color: #00FFFF; margin-top: 15px; font-size: 0.9rem;">¡Datos sincronizados. Nos vemos a bordo!</p>
+        </div>
     </div>
+</model-viewer>
 
-</body>
-</html>
+<!-- 3. Estilos de la UI Minimalista -->
+<style>
+    /* Estilo del panel holográfico */
+    .hologram-panel {
+        background: rgba(10, 10, 15, 0.8);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(0, 255, 255, 0.3);
+        border-top: 3px solid #00FFFF;
+        padding: 20px;
+        border-radius: 8px;
+        width: 280px;
+        color: #ffffff;
+        font-family: 'Helvetica Neue', sans-serif;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(0, 255, 255, 0.1);
+        /* Oculto inicialmente, se puede hacer visible vía JS cuando entra a AR */
+        display: block; 
+    }
+
+    .minimal-input {
+        width: 100%;
+        box-sizing: border-box;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 8px 0;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .minimal-input:focus {
+        border-bottom: 1px solid #00FFFF;
+    }
+
+    .neon-btn {
+        width: 100%;
+        background: transparent;
+        color: #00FFFF;
+        border: 1px solid #00FFFF;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .neon-btn:active {
+        background: #00FFFF;
+        color: #000;
+    }
+</style>
+
+<!-- 4. Lógica de Sincronización y Audio -->
+<script type="module">
+    // 1. Inicializar Firebase (Asegúrate de incluir los scripts de Firebase SDK en tu <head>)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        // Reemplaza esto con los datos de tu proyecto
+        databaseURL: "https://tu-proyecto-default-rtdb.firebaseio.com" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const modelViewer = document.querySelector('#visor-espacial');
+    const audio = document.querySelector('#ar-audio');
+    const btnConfirmar = document.querySelector('#btn-confirmar');
+    const inputName = document.querySelector('#guest-name');
+    const successMsg = document.querySelector('#success-msg');
+
+    // 2. Disparador de Audio al entrar en AR
+    modelViewer.addEventListener('ar-status', (event) => {
+        if (event.detail.status === 'session-started') {
+            // El usuario ha entrado en la vista de cámara
+            audio.play().catch(e => console.log("Interacción requerida para audio:", e));
+        }
+    });
+
+    // 3. Lógica del botón RSVP
+    btnConfirmar.addEventListener('click', () => {
+        const nombre = inputName.value.trim();
+        
+        if(nombre !== "") {
+            // Sincronizar con Realtime Database
+            const rsvpRef = ref(database, 'asistentes');
+            const nuevoAsistenteRef = push(rsvpRef);
+            
+            set(nuevoAsistenteRef, {
+                nombre: nombre,
+                fechaConfirmacion: new Date().toISOString()
+            }).then(() => {
+                // UI: Ocultar input y botón, mostrar éxito
+                inputName.style.display = 'none';
+                btnConfirmar.style.display = 'none';
+                successMsg.style.display = 'block';
+            }).catch((error) => {
+                console.error("Error al sincronizar datos:", error);
+            });
+        } else {
+            alert("Por favor, ingresa tu nombre.");
+        }
+    });
+</script>
