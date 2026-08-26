@@ -3,102 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save the Date 3D</title>
-    
-    <!-- Importar la librería de Google Model Viewer -->
+    <title>Save the Date 3D - Espacial</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-
     <style>
-        /* Diseño minimalista y a pantalla completa */
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #050505; /* Fondo oscuro espacial */
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            overflow: hidden; /* Evita el scroll */
-        }
-
-        model-viewer {
-            width: 100%;
-            height: 100%;
-            --poster-color: transparent;
-        }
-
-        /* Interfaz superpuesta (UI) */
-        .ui-container {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            color: #ffffff;
-            pointer-events: none; /* Permite rotar el objeto 3D sin que el texto bloquee el dedo */
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 300;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 25px;
-            font-weight: 300;
-        }
-
-        /* Botón de Realidad Aumentada */
-        .ar-button {
-            background-color: rgba(255, 255, 255, 0.95);
-            color: #000000;
-            border: none;
-            border-radius: 50px;
-            padding: 14px 28px;
-            font-size: 1rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            pointer-events: auto; /* Reactiva el touch para el botón */
-            transition: transform 0.2s ease;
-        }
-
-        .ar-button:active {
-            transform: scale(0.95);
-        }
+        body { margin: 0; padding: 0; background-color: #050505; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; }
+        model-viewer { width: 100vw; height: 100vh; --poster-color: transparent; }
+        .ui-container { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); text-align: center; color: #fff; pointer-events: none; z-index: 10; }
+        .ar-button { background-color: rgba(255, 255, 255, 0.95); color: #000; border: none; border-radius: 50px; padding: 14px 28px; font-weight: 600; cursor: pointer; pointer-events: auto; }
     </style>
 </head>
 <body>
 
-    <!-- Contenedor del modelo 3D y entorno AR -->
+    <!-- Se han añadido atributos de iluminación y sombras -->
     <model-viewer 
-        src="space_station.glb" 
-        skybox-image="espacioHDRI.png"
+        src="space_travel.glb" 
+        skybox-image="espacioHDRI.png" 
         environment-image="espacioHDRI.png"
+        exposure="1.5" 
+        shadow-intensity="1.2"
+        shadow-softness="0.8"
+        tone-mapping="aces"
         ar 
         ar-modes="webxr scene-viewer quick-look" 
         ar-placement="floor" 
         camera-controls
-        auto-rotate
-        rotation-per-second="30deg">
+        auto-rotate>
         
-        <!-- Botón personalizado de AR -->
-        <button slot="ar-button" class="ar-button">
-            VER EN TU ESPACIO
-        </button>
+        <button slot="ar-button" class="ar-button">VER EN TU ESPACIO</button>
     </model-viewer>
 
-    <!-- Textos minimalistas superpuestos -->
     <div class="ui-container">
-        <h1>Save the Date</h1>
         <p>Apunta al suelo para fijar la nave</p>
     </div>
 
