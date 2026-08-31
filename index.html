@@ -98,14 +98,15 @@
         </div>
     </div>
 
-    <!-- PANTALLA 2: VISOR 3D Y AR -->
+    <!-- PANTALLA 2: VISOR 3D Y AR (ILUMINACIÓN CORREGIDA) -->
     <model-viewer id="visor-espacial" 
         src="./escenario 2.glb" 
         skybox-image="./espacioHDRI.png" 
-        environment-image="./espacioHDRI.png"
-        exposure="1.5" 
-        shadow-intensity="1.2"
-        tone-mapping="aces"
+        environment-image="neutral" 
+        exposure="1.2" 
+        shadow-intensity="1.5"
+        shadow-softness="0.5"
+        tone-mapping="neutral"
         ar 
         ar-modes="webxr scene-viewer quick-look" 
         ar-placement="floor" 
